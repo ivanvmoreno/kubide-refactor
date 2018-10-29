@@ -1,33 +1,14 @@
-"use strict";
+const Translate = require('@google-cloud/translate');
 
-var Translate = require('@google-cloud/translate');
-var async = require('async');
-
-var TranslateService = {};
-var translate = new Translate({
-  keyFilename: './src/translator.conf.json',
+// Configuramos el módulo con los credenciales de acceso a la API de Google Cloud Translate
+const translate = new Translate({
+    keyFilename: './src/translator.conf.json'
 });
 
-TranslateService.translateText = function (content, targetLang, next) {
-
-  var calls = [];
-
-  calls.push(function (callback) {
-
+// Función traducirTexto(texto, idioma [, next])
+exports.traducirTexto = (texto, idioma, next = (resultado, err = null) => resultado) => {
     translate
-      .translate( content, targetLang )
-      .then(results => {
-        return callback(null, results[0]);
-      })
-      .catch(err => {
-        console.error('ERROR:', err);
-      });
-  });
-
-  async.waterfall(calls, function (err, response) {
-    if (next) next(err, response);
-  });
+        .translate(texto, idioma)
+        .then(resultado => next(resultado[0]))
+        .catch(err => next(null, err));
 };
-
-
-module.exports = TranslateService;
